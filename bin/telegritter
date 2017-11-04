@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+# Copyright 2017 Facundo Batista
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For further info, check  https://github.com/facundobatista/telegritter
+
+"""Script to run the 'telegritter' daemon."""
+
+import asyncio
+import os
+import sys
+
+parent_dir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
+if os.path.basename(parent_dir) == 'telegritter':
+    # inside the project!!
+    sys.path.insert(0, parent_dir)
+    os.chdir(parent_dir)    # to allow use of relative paths
+
+from telegritter import main
+from telegritter.config import config
+
+USAGE = """
+Usage: telegritter.py [OPTIONS]
+
+Options:
+    --telegram-token: Auth token for telegram.
+    --twitter-tokens: Auth info for twitter API in the form 
+        consumer_key:consumer_secret:access_token:access_token_secret
+"""
+
+if '--help' in sys.argv:
+    print(USAGE)
+    exit()
+
+options = dict(o[2:].split('=', 1) 
+               for o in sys.argv if o.startswith('--') and '=' in o)
+
+options2config = {
+    'telegram-token': 'TELEGRAM_TOKEN',
+    'twitter-tokens': 'TWITTER_TOKENS',
+}
+if options:
+    for opt, value in options.items():
+        try:
+            conf_key = options2config[opt]
+        except KeyError:
+            print(USAGE)
+            exit()
+    
+        setattr(config, conf_key, value)
+    config.save()
+
+if not config.TELEGRAM_TOKEN:
+    print("ERROR: Telegram bot auth token still not configured")
+    exit()
+
+if not config.TWITTER_TOKENS:
+    print("ERROR: Twitter API auth tokens still not configured")
+    exit()
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main.go())
+loop.close()

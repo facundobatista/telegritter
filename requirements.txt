@@ -1,0 +1,3 @@
+aiohttp
+appdirs
+tweepy

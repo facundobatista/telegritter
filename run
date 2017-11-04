@@ -1,0 +1,1 @@
+fades -r requirements.txt bin/telegritter "$@"
