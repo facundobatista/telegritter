@@ -34,6 +34,8 @@ class _Config(object):
         'TELEGRAM_TOKEN': None,
         'TWITTER_TOKENS': None,
         'USER_ALLOWED': None,
+        'POLLER_DELAY': 10,
+        'TWITTER_LAST_ID': None,
     }
 
     def __init__(self):

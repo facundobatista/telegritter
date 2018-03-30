@@ -14,6 +14,7 @@
 #
 # For further info, check  https://github.com/facundobatista/telegritter
 
+import asyncio
 import logging
 import os
 import sys
@@ -59,4 +60,7 @@ async def go():
     """Main entry point."""
     telegram.telegram.init()
     twitter.twitter.init()
-    await telegram.go()
+    await asyncio.gather(
+        telegram.go(twitter.twitter, init_delay=False),
+        twitter.go(telegram.telegram, init_delay=True),
+    )

@@ -23,7 +23,6 @@ from urllib import parse
 import aiohttp
 
 from telegritter.config import config
-from telegritter.twitter import twitter
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +70,7 @@ class Message:
             text = msg['text']
             info = dict(text=text)
 
+        # FIXME: reuse, maybe, for images
         # elif 'photo' in msg:
         #     # grab the content of the biggest photo only
         #     photo = max(msg['photo'], key=lambda photo: photo['width'])
@@ -79,6 +79,7 @@ class Message:
         #     text = msg['caption'] if 'caption' in msg else None
         #     info = dict(extfile_path=extfile_path, media_type=media_type, text=text)
 
+        # FIXME: reuse, maybe, for real files (?)
         # elif 'voice' in msg:
         #     # get the audio file
         #     extfile_path = await download_file(msg['voice']['file_id'])
@@ -159,28 +160,64 @@ class Telegram:
         self.token = config.TELEGRAM_TOKEN
         self.session = aiohttp.ClientSession()
 
-    def _build_baseapi_url(self, method, **kwargs):
-        """Build the proper url to hit the API."""
+    def _build_get_url(self, method, **kwargs):
+        """Build the proper url to hit the API with a GET."""
         url = API_BASE.format(token=self.token, method=method)
         if kwargs:
             url += '?' + parse.urlencode(kwargs)
         return url
+
+    async def update(self, tweet):
+        """Send message to Telegram."""
+        if not config.USER_ALLOWED:
+            logger.warning("Ignoring message (no USER_ALLOWED)")
+            return
+
+        print("================== telegram update, user", repr(config.USER_ALLOWED))
+        print("================== telegram update, tweet", tweet)
+        message = tweet.text  # FIXME build nicier
+        kwargs = {
+            'chat_id': config.USER_ALLOWED,
+            'text': message,
+        }
+        url = self._build_get_url('sendMessage', **kwargs)
+        logger.debug("Sending message, kwargs=%s", kwargs)
+
+        async with self.session.get(url) as resp:
+            print("=========== resp, status", resp.status)
+            raw_data = await resp.text()
+
+        print("============ resp, raw", repr(raw_data))
+        data = json.loads(raw_data)
+        if data['ok']:
+            logger.debug("Update ok")
+        else:
+            logger.error("Update error: %s", data['result'])
 
     async def get(self):
         """Get messages from Telegram."""
         kwargs = {}
         if config.TELEGRAM_LAST_ID is not None:
             kwargs['offset'] = config.TELEGRAM_LAST_ID + 1
-        url = self._build_baseapi_url('getUpdates', **kwargs)
+        url = self._build_get_url('getUpdates', **kwargs)
         logger.debug("Getting updates, kwargs=%s", kwargs)
+        # FIXME: support receiving image(s) and sending them to twitter
 
-        async with self.session.get(url) as resp:
-            print("=========== resp, status", resp.status)
-            raw_data = await resp.text()
+        # FIXME: recognize that the message is a reply to a previous one, so build that as a
+        # reply in twitter (to a normal message, or a DM)
+
+        try:
+            async with self.session.get(url) as resp:
+                print("=========== resp, status", resp.status)
+                raw_data = await resp.text()
+        except aiohttp.client_exceptions.ClientConnectorError as exc:
+            logger.error("AIOHTTP error: %s", exc)
+            return []
 
         print("============ resp, content", repr(raw_data))
         logger.debug("Process encoded data len=%d", len(raw_data))
         data = json.loads(raw_data)
+        messages = []
         if data.get('ok'):
             results = data['result']
             logger.debug("Telegram results ok! len=%d", len(results))
@@ -188,27 +225,34 @@ class Telegram:
             for item in results:
                 logger.debug("Processing result: %s", item)
                 msg = await Message.from_update(item)
+                print("====== parsed", msg, msg.useful)
                 if msg.useful:
-                    yield msg
+                    messages.append(msg)
             if msg is not None:
                 config.TELEGRAM_LAST_ID = msg.message_id
+                config.save()
         else:
             logger.warning("Telegram result is not ok: %s", data)
+        return messages
 
 
 telegram = Telegram()
 
 
-async def poller():
+async def poller(twitter):
     """Check telegram to see if something's new."""
     logger.debug("Running telegram poller")
-    async for message in telegram.get():
-        logger.debug("Poller got telegram message: %s", message)
-        twitter.updated(message.text)
+    messages = await telegram.get()
+    for message in messages:
+        logger.debug("Poller got message: %s", message)
+        twitter.update(message.text)
 
 
-async def go():
+async def go(twitter, init_delay):
     """Set up listener."""
+    if init_delay:
+        await asyncio.sleep(config.POLLER_DELAY / 2)
+
     while True:
-        await poller()
-        await asyncio.sleep(3)
+        await poller(twitter)
+        await asyncio.sleep(config.POLLER_DELAY)
