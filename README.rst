@@ -1,7 +1,7 @@
 Welcome to telegritter
 ======================
 
-``telegritter`` is a Telegram to Twitter bridge, or a Tegram user interface to your Twitter account.
+``telegritter`` is a Telegram to Twitter bridge, in other words a Tegram user interface to your Twitter account.
 
 
 .. image:: media/logo_256.png
@@ -19,10 +19,10 @@ How to use it
 
 Install it, add the bot to your Telegram account, start talking/tweeting.
 
-FIXME: what about auth? how it makes that this bot can not be used by somebody else?
+FIXME(1): what about auth? how it makes that this bot can not be used by somebody else?
 
 
 How to install it
 -----------------
 
-FIXME
+FIXME(2)

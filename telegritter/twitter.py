@@ -1,4 +1,4 @@
-# Copyright 2017 Facundo Batista
+# Copyright 2017-2019 Facundo Batista
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -37,8 +37,8 @@ class Tweet:
     @classmethod
     def _from_update(cls, update):
         """Create from a twitter message."""
-        # FIXME: support tweets with images, send them to telegram
-        # FIXME: differentiate a DM and send it special to telegram
+        # FIXME(3): support tweets with images, send them to telegram
+        # FIXME(4): differentiate a DM and send it special to telegram
 
         return cls(tweet_id=update.id, created_at=update.created_at, text=update.text,
                    author=update.author.name)
@@ -73,7 +73,7 @@ class Twitter:
 
     def update(self, text):
         """Send message to Twitter."""
-        # FIXME: run in a thread!!!
+        # FIXME(5): run in a thread!!!
         print("================== twitter update, text", repr(text))
         resp = self.api.update_status(text)
         print("================== twitter update, resp", resp)
@@ -110,7 +110,7 @@ class Twitter:
         config.TWITTER_LAST_ID = tweet.tweet_id
         config.save()
 
-        # FIXME: get DMs to me
+        # FIXME(6): get DMs to me
         return results
 
 

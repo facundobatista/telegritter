@@ -1,4 +1,4 @@
-# Copyright 2017 Facundo Batista
+# Copyright 2017-2019 Facundo Batista
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -70,7 +70,7 @@ class Message:
             text = msg['text']
             info = dict(text=text)
 
-        # FIXME: reuse, maybe, for images
+        # FIXME(7): reuse, maybe, for images
         # elif 'photo' in msg:
         #     # grab the content of the biggest photo only
         #     photo = max(msg['photo'], key=lambda photo: photo['width'])
@@ -79,7 +79,7 @@ class Message:
         #     text = msg['caption'] if 'caption' in msg else None
         #     info = dict(extfile_path=extfile_path, media_type=media_type, text=text)
 
-        # FIXME: reuse, maybe, for real files (?)
+        # FIXME(8): reuse, maybe, for real files (?)
         # elif 'voice' in msg:
         #     # get the audio file
         #     extfile_path = await download_file(msg['voice']['file_id'])
@@ -114,7 +114,7 @@ class Message:
             self.message_id, self.sent_at, self. text, self.media_type, self.extfile_path)
 
 
-# FIXME: reuse this in a future when we support receiving images from telegram
+# FIXME(7): reuse this in a future when we support receiving images from telegram
 # API_FILE = "https://api.telegram.org/file/bot{token}/{file_path}"
 # def build_fileapi_url(file_path):
 #     """Build the proper url to hit the API."""
@@ -123,7 +123,7 @@ class Message:
 #     return url
 
 
-# FIXME: reuse this in the future when we need real files
+# FIXME(8): reuse this in the future when we need real files
 # @defer.inline_callbacks
 # def download_file(file_id):
 #     """Download the file content from Telegram."""
@@ -175,7 +175,7 @@ class Telegram:
 
         print("================== telegram update, user", repr(config.USER_ALLOWED))
         print("================== telegram update, tweet", tweet)
-        message = tweet.text  # FIXME build nicier
+        message = tweet.text  # FIXME(9) build nicier
         kwargs = {
             'chat_id': config.USER_ALLOWED,
             'text': message,
@@ -201,9 +201,9 @@ class Telegram:
             kwargs['offset'] = config.TELEGRAM_LAST_ID + 1
         url = self._build_get_url('getUpdates', **kwargs)
         logger.debug("Getting updates, kwargs=%s", kwargs)
-        # FIXME: support receiving image(s) and sending them to twitter
+        # FIXME(10): support receiving image(s) and sending them to twitter
 
-        # FIXME: recognize that the message is a reply to a previous one, so build that as a
+        # FIXME(11): recognize that the message is a reply to a previous one, so build that as a
         # reply in twitter (to a normal message, or a DM)
 
         try:
