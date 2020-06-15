@@ -17,12 +17,65 @@ It even manages direct messages (DMs), marking received messages with a prefix s
 How to use it
 -------------
 
-Install it, add the bot to your Telegram account, start talking/tweeting.
+Make it run, add the bot to your Telegram account, start talking/tweeting.
 
-FIXME(1): what about auth? how it makes that this bot can not be used by somebody else?
+The first time you talk to the bot through Telegram, Telegritter will save your user id and will forbid other users to use it. You don't need to save your user id as a specific step, it's automatic.
 
 
-How to install it
------------------
+How to make it run
+------------------
 
-FIXME(2)
+There are threee three parts in making Telegritter live: have the process running, make it talk to Twitter, and make it talk to Telegram. Once these three are done, you can leave it running and enjoy it.
+
+Note: these instructions does not cover how to install this in a deamon mode, supporting machine reboots, etc. PRs welcomed.
+
+So, first, have the process running. You only need to have `fades <https://github.com/PyAr/fades>`_ installed. Clone the project and just::
+
+    ./run
+
+You should get an ERROR because of auth needed for Telegram. Let's fix that. Go to **Configuring Telegram** section below and come back when finished.
+
+If you `./run` the project again you should get another ERROR, now it's turn for Twitter. Go to **Configuring Twitter** section below, and come back when finished.
+
+FIXME:
+que corra de nuevo, debería QUE??
+como probarlo que funciona??
+
+
+Configuring Telegram
+--------------------
+
+Open your Telegram client, search for BotFather and start talking to it. 
+
+First step is to create the bot you will use for this, so tell the following to BotFather::
+
+  /newbot 
+
+It will ask for a name, and then for an username. Example: ``Telegritter Example`` and ``telegritter_example_bot``.  Note that because of Telegram rules, the name you choose needs to end in 'bot'.
+
+If all is fine, Botfather should congratulate you and give you a token to access the HTTP API, something that would look like ``4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1``.
+
+Copy that string and tell telegritter that this is the Telegram token::
+
+    ./run --telegram-token=4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1
+
+And that's all!
+
+
+Configuring Twitter
+-------------------
+
+Open Twitter in your browser, and being logged into your account, go to `the section for developers to manage applications <https://developer.twitter.com/en/apps/>`_.
+
+There you would be able to create a new application, and after filling quite some information you will have access to the "Keys and tokens" section, where you will find the consumer API keys, something like...
+
+    API key: ldaeiddlh3o8ahdl.SDA?DJAV
+    API secret key: CJDWa;dj3laohdlaohdl8ohdl8ohdlohlhaddhflkshflkfWfz
+
+...and access tokens, something like...
+
+    Access token: 41225dl73qoy8hd94fsf-sn4fnej2q8hadaliASD4fwrKeED1r
+    Access token secret: dljo8maod38hd8hldi3aflaodaHFOULUEGlidshfshfoz
+
+Grab all those for ugly strings, get them together separated by ``:``, 
+        consumer_key, consumer_secret, access_token, access_token_secret = tokens
