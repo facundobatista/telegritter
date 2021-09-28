@@ -1,7 +1,7 @@
-Welcome to telegritter
+Welcome to Telegritter
 ======================
 
-``telegritter`` is a Telegram to Twitter bridge, in other words a Tegram user interface to your Twitter account.
+**Telegritter** is a Telegram to Twitter bridge, in other words a Tegram user interface to your Twitter account.
 
 
 .. image:: media/logo_256.png
@@ -55,7 +55,7 @@ It will ask for a name, and then for an username. Example: ``Telegritter Example
 
 If all is fine, Botfather should congratulate you and give you a token to access the HTTP API, something that would look like ``4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1``.
 
-Copy that string and tell telegritter that this is the Telegram token::
+Copy that string and tell Telegritter that this is the Telegram token::
 
     ./run --telegram-token=4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1
 
@@ -77,5 +77,10 @@ There you would be able to create a new application, and after filling quite som
     Access token: 41225dl73qoy8hd94fsf-sn4fnej2q8hadaliASD4fwrKeED1r
     Access token secret: dljo8maod38hd8hldi3aflaodaHFOULUEGlidshfshfoz
 
-Grab all those for ugly strings, get them together separated by ``:``, 
-        consumer_key, consumer_secret, access_token, access_token_secret = tokens
+Grab all those for ugly strings, get them together separated by ``:``, and tell Telegritter that these are the Twitter tokens. As an example, per the tokens above, it would be::
+
+    ./run --twitter-tokens=ldaeiddlh3o8ahdl.SDA?DJAV:CJDWa;dj3laohdlaohdl8ohdl8ohdlohlhaddhflkshflkfWfz:41225dl73qoy8hd94fsf-sn4fnej2q8hadaliASD4fwrKeED1r:dljo8maod38hd8hldi3aflaodaHFOULUEGlidshfshfoz
+
+Done!
+
+
