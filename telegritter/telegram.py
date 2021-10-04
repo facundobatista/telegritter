@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Facundo Batista
+# Copyright 2017-2021 Facundo Batista
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -14,7 +14,6 @@
 #
 # For further info, check  https://github.com/facundobatista/telegritter
 
-import asyncio
 import json
 import logging
 from datetime import datetime
@@ -155,9 +154,10 @@ API_BASE = "https://api.telegram.org/bot{token}/{method}"
 class Telegram:
     """An interface to Telegram."""
 
-    def init(self):
-        """Get tokens from config and start stuff."""
-        self.token = config.TELEGRAM_TOKEN
+    AUTH_KEYS = ('token',)
+
+    def __init__(self, auth_info):
+        self.token = auth_info['token']
         self.session = aiohttp.ClientSession()
 
     def _build_get_url(self, method, **kwargs):
@@ -173,8 +173,6 @@ class Telegram:
             logger.warning("Ignoring message (no USER_ALLOWED)")
             return
 
-        print("================== telegram update, user", repr(config.USER_ALLOWED))
-        print("================== telegram update, tweet", tweet)
         message = tweet.text  # FIXME(9) build nicier
         kwargs = {
             'chat_id': config.USER_ALLOWED,
@@ -184,10 +182,8 @@ class Telegram:
         logger.debug("Sending message, kwargs=%s", kwargs)
 
         async with self.session.get(url) as resp:
-            print("=========== resp, status", resp.status)
             raw_data = await resp.text()
 
-        print("============ resp, raw", repr(raw_data))
         data = json.loads(raw_data)
         if data['ok']:
             logger.debug("Update ok")
@@ -208,13 +204,11 @@ class Telegram:
 
         try:
             async with self.session.get(url) as resp:
-                print("=========== resp, status", resp.status)
                 raw_data = await resp.text()
         except aiohttp.client_exceptions.ClientConnectorError as exc:
             logger.error("AIOHTTP error: %s", exc)
             return []
 
-        print("============ resp, content", repr(raw_data))
         logger.debug("Process encoded data len=%d", len(raw_data))
         data = json.loads(raw_data)
         messages = []
@@ -225,7 +219,7 @@ class Telegram:
             for item in results:
                 logger.debug("Processing result: %s", item)
                 msg = await Message.from_update(item)
-                print("====== parsed", msg, msg.useful)
+                logger.info("New telegram message: %s", msg)
                 if msg.useful:
                     messages.append(msg)
             if msg is not None:
@@ -235,24 +229,10 @@ class Telegram:
             logger.warning("Telegram result is not ok: %s", data)
         return messages
 
-
-telegram = Telegram()
-
-
-async def poller(twitter):
-    """Check telegram to see if something's new."""
-    logger.debug("Running telegram poller")
-    messages = await telegram.get()
-    for message in messages:
-        logger.debug("Poller got message: %s", message)
-        twitter.update(message.text)
-
-
-async def go(twitter, init_delay):
-    """Set up listener."""
-    if init_delay:
-        await asyncio.sleep(config.POLLER_DELAY / 2)
-
-    while True:
-        await poller(twitter)
-        await asyncio.sleep(config.POLLER_DELAY)
+    async def poller(self, twitter):
+        """Check telegram to see if something's new, send it to twitter."""
+        logger.debug("Running telegram poller")
+        messages = await self.get()
+        for message in messages:
+            logger.debug("Poller got message: %s", message)
+            twitter.update(message.text)

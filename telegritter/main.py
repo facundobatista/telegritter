@@ -1,4 +1,4 @@
-# Copyright 2017 Facundo Batista
+# Copyright 2017-2021 Facundo Batista
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -21,7 +21,7 @@ import sys
 import traceback
 from logging.handlers import RotatingFileHandler
 
-from telegritter import telegram, twitter
+from telegritter.config import config
 
 
 def exception_handler(exc_type, exc_value, tb):
@@ -56,11 +56,19 @@ logger.addHandler(handler)
 sys.excepthook = exception_handler
 
 
-async def go():
+async def _run(runner, other, with_init_delay):
+    """Start a client, passing the other one."""
+    if with_init_delay:
+        await asyncio.sleep(config.POLLER_DELAY / 2)
+
+    while True:
+        await runner.poller(other)
+        await asyncio.sleep(config.POLLER_DELAY)
+
+
+async def main(twitter, telegram):
     """Main entry point."""
-    telegram.telegram.init()
-    twitter.twitter.init()
     await asyncio.gather(
-        telegram.go(twitter.twitter, init_delay=False),
-        twitter.go(telegram.telegram, init_delay=True),
+        _run(telegram, twitter, with_init_delay=False),
+        _run(twitter, telegram, with_init_delay=True),
     )

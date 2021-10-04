@@ -29,17 +29,21 @@ There are threee three parts in making Telegritter live: have the process runnin
 
 Note: these instructions does not cover how to install this in a deamon mode, supporting machine reboots, etc. PRs welcomed.
 
-So, first, have the process running. You only need to have `fades <https://github.com/PyAr/fades>`_ installed. Clone the project and just::
+So, first, have the process running. You only need to have `fades <https://github.com/PyAr/fades>`_ installed. After cloning the project, prepare the authentication files (see the section below) and run::
 
-    ./run
+    ./run <path to telegram auth file> <path to twitter auth file>
 
-You should get an ERROR because of auth needed for Telegram. Let's fix that. Go to **Configuring Telegram** section below and come back when finished.
 
-If you `./run` the project again you should get another ERROR, now it's turn for Twitter. Go to **Configuring Twitter** section below, and come back when finished.
+How to try it's working
+-----------------------
 
-FIXME:
-que corra de nuevo, debería QUE??
-como probarlo que funciona??
+At this point you should be able to write something in Telegram and see that tweetted. Try answering that tweet and you should receive the new message back on Telegram.
+
+
+Configuration Setup
+===================
+
+The configuration setup is basically getting the auth tokens for Telegram and Twitter, and saving them in somewhat secure files for the program to use them (using `infoauth <https://pypi.org/project/infoauth/>`_).
 
 
 Configuring Telegram
@@ -55,11 +59,9 @@ It will ask for a name, and then for an username. Example: ``Telegritter Example
 
 If all is fine, Botfather should congratulate you and give you a token to access the HTTP API, something that would look like ``4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1``.
 
-Copy that string and tell Telegritter that this is the Telegram token::
+Copy that string and save it using ``infoauth``::
 
-    ./run --telegram-token=4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1
-
-And that's all!
+    infoauth create telegritter-telegram.cfg token=4121309109:j2ETwMFpwk1ldaj39jdaaj4vWoe7Kqv-ee1
 
 
 Configuring Twitter
@@ -67,20 +69,20 @@ Configuring Twitter
 
 Open Twitter in your browser, and being logged into your account, go to `the section for developers to manage applications <https://developer.twitter.com/en/apps/>`_.
 
-There you would be able to create a new application, and after filling quite some information you will have access to the "Keys and tokens" section, where you will find the consumer API keys, something like...
+There you would be able to create a new application, and after filling quite some information you will have access to the "Keys and tokens" section, where you will find the consumer API keys, something like::
 
     API key: ldaeiddlh3o8ahdl.SDA?DJAV
     API secret key: CJDWa;dj3laohdlaohdl8ohdl8ohdlohlhaddhflkshflkfWfz
 
-...and access tokens, something like...
+...and access tokens, something like::
 
     Access token: 41225dl73qoy8hd94fsf-sn4fnej2q8hadaliASD4fwrKeED1r
     Access token secret: dljo8maod38hd8hldi3aflaodaHFOULUEGlidshfshfoz
 
-Grab all those for ugly strings, get them together separated by ``:``, and tell Telegritter that these are the Twitter tokens. As an example, per the tokens above, it would be::
+Grab all those for ugly strings and save them using ``infoauth``::
 
-    ./run --twitter-tokens=ldaeiddlh3o8ahdl.SDA?DJAV:CJDWa;dj3laohdlaohdl8ohdl8ohdlohlhaddhflkshflkfWfz:41225dl73qoy8hd94fsf-sn4fnej2q8hadaliASD4fwrKeED1r:dljo8maod38hd8hldi3aflaodaHFOULUEGlidshfshfoz
-
-Done!
-
-
+    infoauth create telegritter-twitter.cfg \
+        api_key=ldaeiddlh3o8ahdl.SDA?DJAV \
+        api_secret_key=CJDWa;dj3laohdlaohdl8ohdl8ohdlohlhaddhflkshflkfWfz \
+        access_token=41225dl73qoy8hd94fsf-sn4fnej2q8hadaliASD4fwrKeED1r \
+        access_token_secret=dljo8maod38hd8hldi3aflaodaHFOULUEGlidshfshfoz

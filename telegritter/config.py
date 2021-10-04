@@ -1,4 +1,4 @@
-# Copyright 2017 Facundo Batista
+# Copyright 2017-2021 Facundo Batista
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -25,14 +25,12 @@ logger = logging.getLogger(__name__)
 FILEPATH = os.path.join(config_basedir, 'telegritter.cfg')
 
 
-class _Config(object):
+class _Config:
     """The configuration."""
 
     # config options, with their default
     _config_options = {
         'TELEGRAM_LAST_ID': None,
-        'TELEGRAM_TOKEN': None,
-        'TWITTER_TOKENS': None,
         'USER_ALLOWED': None,
         'POLLER_DELAY': 10,
         'TWITTER_LAST_ID': None,

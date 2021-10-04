@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Facundo Batista
+# Copyright 2017-2021 Facundo Batista
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -63,20 +63,20 @@ class Tweet:
 
 
 class Twitter:
+    """An interface to Twitter."""
 
-    def init(self):
-        tokens = config.TWITTER_TOKENS.split(':')
-        consumer_key, consumer_secret, access_token, access_token_secret = tokens
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-        auth.set_access_token(access_token, access_token_secret)
+    AUTH_KEYS = ("api_key", "api_secret_key", "access_token", "access_token_secret")
+
+    def __init__(self, auth_info):
+        auth = tweepy.OAuthHandler(auth_info['api_key'], auth_info['api_secret_key'])
+        auth.set_access_token(auth_info['access_token'], auth_info['access_token_secret'])
         self.api = tweepy.API(auth)
 
     def update(self, text):
         """Send message to Twitter."""
         # FIXME(5): run in a thread!!!
-        print("================== twitter update, text", repr(text))
         resp = self.api.update_status(text)
-        print("================== twitter update, resp", resp)
+        print("========= twitter update:", resp)
 
     async def get(self):
         """Get messages, notifications, etc. from Twitter."""
@@ -106,6 +106,7 @@ class Twitter:
             logger.debug("Processing result: %s", item)
             tweet = Tweet.from_update(item)
             if tweet.useful:
+                logger.info("New twitter message: %s", tweet)
                 results.append(tweet)
         config.TWITTER_LAST_ID = tweet.tweet_id
         config.save()
@@ -113,24 +114,10 @@ class Twitter:
         # FIXME(6): get DMs to me
         return results
 
-
-twitter = Twitter()
-
-
-async def poller(telegram):
-    """Check twitter to see if something's new."""
-    logger.debug("Running twitter poller")
-    tweets = await twitter.get()
-    for tweet in tweets:
-        logger.debug("Poller got tweet: %s", tweet)
-        await telegram.update(tweet)
-
-
-async def go(telegram, init_delay):
-    """Set up listener."""
-    if init_delay:
-        await asyncio.sleep(config.POLLER_DELAY / 2)
-
-    while True:
-        await poller(telegram)
-        await asyncio.sleep(config.POLLER_DELAY)
+    async def poller(self, telegram):
+        """Check twitter to see if something's new, send it to telegram."""
+        logger.debug("Running twitter poller")
+        tweets = await self.get()
+        for tweet in tweets:
+            logger.debug("Poller got tweet: %s", tweet)
+            await telegram.update(tweet)
